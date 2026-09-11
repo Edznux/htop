@@ -274,7 +274,7 @@ static void AllCPUsMeter_getRange(const Meter* this, unsigned int* start, unsign
  * seen for the first time. Sub-meters are kept per CPU id, so a CPU that is
  * hidden or shifts to another slot keeps its history. Returns true if the
  * shown sequence changed. */
-static bool CPUMeterCommonMapCPUs(Meter* this) {
+static bool CPUMeter_commonMapCPUs(Meter* this) {
    const Machine* host = this->host;
    CPUMeterData* data = this->meterData;
    unsigned int start, count;
@@ -323,7 +323,7 @@ static bool CPUMeterCommonMapCPUs(Meter* this) {
    return changed;
 }
 
-static void CPUMeterCommonUpdateHeight(Meter* this) {
+static void CPUMeter_commonUpdateHeight(Meter* this) {
    const CPUMeterData* data = this->meterData;
    if (!data->shownCount) {
       this->h = 1;
@@ -336,7 +336,7 @@ static void CPUMeterCommonUpdateHeight(Meter* this) {
 
 /* (Re)initializes every sub-meter, syncs it to this meter's mode and keeps
  * the height in sync with the shown CPUs (hot-plug, setup changes) */
-static void CPUMeterCommonInitSubMeters(Meter* this) {
+static void CPUMeter_commonInitSubMeters(Meter* this) {
    const CPUMeterData* data = this->meterData;
    for (unsigned int i = 0; i < data->cpus; i++) {
       Meter* meter = data->meters[i];
@@ -348,10 +348,10 @@ static void CPUMeterCommonInitSubMeters(Meter* this) {
          Meter_setMode(meter, this->mode);
    }
 
-   CPUMeterCommonUpdateHeight(this);
+   CPUMeter_commonUpdateHeight(this);
 }
 
-static void CPUMeterCommonInit(Meter* this, unsigned int ncol) {
+static void CPUMeter_commonInit(Meter* this, unsigned int ncol) {
    CPUMeterData* data = this->meterData;
    if (!data) {
       data = xCalloc(1, sizeof(CPUMeterData));
@@ -359,30 +359,30 @@ static void CPUMeterCommonInit(Meter* this, unsigned int ncol) {
    }
    data->ncol = ncol;
 
-   CPUMeterCommonMapCPUs(this);
-   CPUMeterCommonInitSubMeters(this);
+   CPUMeter_commonMapCPUs(this);
+   CPUMeter_commonInitSubMeters(this);
 }
 
 static void SingleColCPUsMeter_init(Meter* this) {
-   CPUMeterCommonInit(this, 1);
+   CPUMeter_commonInit(this, 1);
 }
 
 static void DualColCPUsMeter_init(Meter* this) {
-   CPUMeterCommonInit(this, 2);
+   CPUMeter_commonInit(this, 2);
 }
 
 static void QuadColCPUsMeter_init(Meter* this) {
-   CPUMeterCommonInit(this, 4);
+   CPUMeter_commonInit(this, 4);
 }
 
 static void OctoColCPUsMeter_init(Meter* this) {
-   CPUMeterCommonInit(this, 8);
+   CPUMeter_commonInit(this, 8);
 }
 
 static void AllCPUsMeter_updateValues(Meter* this) {
    /* Reinit if the shown CPUs changed (e.g. hot-plug, hidden offline CPUs) */
-   if (CPUMeterCommonMapCPUs(this))
-      CPUMeterCommonInitSubMeters(this);
+   if (CPUMeter_commonMapCPUs(this))
+      CPUMeter_commonInitSubMeters(this);
 
    const CPUMeterData* data = this->meterData;
    for (unsigned int i = 0; i < data->shownCount; i++)
